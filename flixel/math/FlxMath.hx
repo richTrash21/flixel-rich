@@ -186,7 +186,7 @@ class FlxMath
 	 * @param	rect		The FlxRect to test within
 	 * @return	true if pointX/pointY is within the FlxRect, otherwise false
 	 */
-	public static function pointInFlxRect(pointX:Float, pointY:Float, rect:FlxRect):Bool
+	public static inline function pointInFlxRect(pointX:Float, pointY:Float, rect:FlxRect):Bool
 	{
 		return rect.containsXY(pointX, pointY);
 	}
@@ -226,7 +226,7 @@ class FlxMath
 	 * @param	rect		The Rectangle to test within
 	 * @return	true if pointX/pointY is within the Rectangle, otherwise false
 	 */
-	public static function pointInRectangle(pointX:Float, pointY:Float, rect:Rectangle):Bool
+	public static inline function pointInRectangle(pointX:Float, pointY:Float, rect:Rectangle):Bool
 	{
 		return pointX >= rect.x && pointX <= rect.right && pointY >= rect.y && pointY <= rect.bottom;
 	}
@@ -286,7 +286,7 @@ class FlxMath
 	 * @param 	stop2 	Upper bound of the value's target range
 	 * @return The remapped value
 	 */
-	public static function remapToRange(value:Float, start1:Float, stop1:Float, start2:Float, stop2:Float):Float
+	public static inline function remapToRange(value:Float, start1:Float, stop1:Float, start2:Float, stop2:Float):Float
 	{
 		return start2 + (value - start1) * ((stop2 - start2) / (stop1 - start1));
 	}
@@ -547,7 +547,7 @@ class FlxMath
 	 */
 	public static inline function sinh(n:Float):Float
 	{
-		return (Math.exp(n) - Math.exp(-n)) / 2;
+		return (Math.exp(n) - Math.exp(-n)) * 0.5;
 	}
 
 	/**
