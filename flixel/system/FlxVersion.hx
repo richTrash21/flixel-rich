@@ -20,13 +20,13 @@ class FlxVersion
 		this.minor = minor;
 		this.patch = patch;
 		
-		// build string representation of this version
+		// build a string representation of this version
 		var sha = FlxVersion.sha;
 		if (sha != "")
 		{
 			sha = "@" + sha.substring(0, 7);
 		}
-		s = 'HaxeFlixel $major.$minor.$patch$sha [MODIFIED]';
+		s = 'HaxeFlixel $major.$minor.$patch-rich$sha';
 	}
 	
 	/**
