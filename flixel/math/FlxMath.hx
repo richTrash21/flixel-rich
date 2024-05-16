@@ -16,43 +16,35 @@ import flixel.input.touch.FlxTouch;
  */
 class FlxMath
 {
-	#if (flash || js || ios || blackberry)
 	/**
 	 * Minimum value of a floating point number.
 	 */
-	public static inline var MIN_VALUE_FLOAT:Float = 0.0000000000000001;
-	#else
-
-	/**
-	 * Minimum value of a floating point number.
-	 */
-	public static inline var MIN_VALUE_FLOAT:Float = 5e-324;
-	#end
+	public static inline final MIN_VALUE_FLOAT:Float = #if (flash || js || ios || blackberry) 0.0000000000000001 #else 5e-324 #end;
 
 	/**
 	 * Maximum value of a floating point number.
 	 */
-	public static inline var MAX_VALUE_FLOAT:Float = 1.79e+308;
+	public static inline final MAX_VALUE_FLOAT:Float = 1.79e+308;
 
 	/**
 	 * Minimum value of an integer.
 	 */
-	public static inline var MIN_VALUE_INT:Int = -MAX_VALUE_INT;
+	public static inline final MIN_VALUE_INT:Int = -MAX_VALUE_INT;
 
 	/**
 	 * Maximum value of an integer.
 	 */
-	public static inline var MAX_VALUE_INT:Int = 0x7FFFFFFF;
+	public static inline final MAX_VALUE_INT:Int = 0x7FFFFFFF;
 
 	/**
 	 * Approximation of `Math.sqrt(2)`.
 	 */
-	public static inline var SQUARE_ROOT_OF_TWO:Float = 1.41421356237;
+	public static inline final SQUARE_ROOT_OF_TWO:Float = 1.41421356237;
 
 	/**
 	 * Used to account for floating-point inaccuracies.
 	 */
-	public static inline var EPSILON:Float = 0.0000001;
+	public static inline final EPSILON:Float = 0.0000001;
 
 	/**
 	 * Round a decimal number to have reduced precision (less decimal numbers).
@@ -87,7 +79,7 @@ class FlxMath
 	 */
 	public static inline function bound(Value:Float, ?Min:Float, ?Max:Float):Float
 	{
-		var lowerBound:Float = (Min != null && Value < Min) ? Min : Value;
+		final lowerBound:Float = (Min != null && Value < Min) ? Min : Value;
 		return (Max != null && lowerBound > Max) ? Max : lowerBound;
 	}
 
@@ -141,17 +133,9 @@ class FlxMath
 	/**
 	 * Returns `-1` if `a` is smaller, `1` if `b` is bigger and `0` if both numbers are equal.
 	 */
-	public static function numericComparison(a:Float, b:Float):Int
+	public static inline function numericComparison(a:Float, b:Float):Int
 	{
-		if (b > a)
-		{
-			return -1;
-		}
-		else if (a > b)
-		{
-			return 1;
-		}
-		return 0;
+		return (b > a ? -1 : (a > b ? 1 : 0));
 	}
 
 	/**
@@ -166,16 +150,9 @@ class FlxMath
 	 *
 	 * @return	true if pointX/pointY is within the region, otherwise false
 	 */
-	public static function pointInCoordinates(pointX:Float, pointY:Float, rectX:Float, rectY:Float, rectWidth:Float, rectHeight:Float):Bool
+	public static inline function pointInCoordinates(pointX:Float, pointY:Float, rectX:Float, rectY:Float, rectWidth:Float, rectHeight:Float):Bool
 	{
-		if (pointX >= rectX && pointX <= (rectX + rectWidth))
-		{
-			if (pointY >= rectY && pointY <= (rectY + rectHeight))
-			{
-				return true;
-			}
-		}
-		return false;
+		return pointX >= rectX && pointX <= (rectX + rectWidth) && pointY >= rectY && pointY <= (rectY + rectHeight);
 	}
 
 	/**
@@ -186,7 +163,7 @@ class FlxMath
 	 * @param	rect		The FlxRect to test within
 	 * @return	true if pointX/pointY is within the FlxRect, otherwise false
 	 */
-	public static function pointInFlxRect(pointX:Float, pointY:Float, rect:FlxRect):Bool
+	public static inline function pointInFlxRect(pointX:Float, pointY:Float, rect:FlxRect):Bool
 	{
 		return rect.containsXY(pointX, pointY);
 	}
@@ -226,7 +203,7 @@ class FlxMath
 	 * @param	rect		The Rectangle to test within
 	 * @return	true if pointX/pointY is within the Rectangle, otherwise false
 	 */
-	public static function pointInRectangle(pointX:Float, pointY:Float, rect:Rectangle):Bool
+	public static inline function pointInRectangle(pointX:Float, pointY:Float, rect:Rectangle):Bool
 	{
 		return pointX >= rect.x && pointX <= rect.right && pointY >= rect.y && pointY <= rect.bottom;
 	}
@@ -241,7 +218,7 @@ class FlxMath
 	 * @param 	min 	The minimum the value is allowed to be
 	 * @return The new value
 	 */
-	public static function maxAdd(value:Int, amount:Int, max:Int, min:Int = 0):Int
+	public static inline function maxAdd(value:Int, amount:Int, max:Int, min:Int = 0):Int
 	{
 		value += amount;
 
@@ -249,7 +226,7 @@ class FlxMath
 		{
 			value = max;
 		}
-		else if (value <= min)
+		else if (value < min)
 		{
 			value = min;
 		}
@@ -268,7 +245,7 @@ class FlxMath
 	 */
 	public static function wrap(value:Int, min:Int, max:Int):Int
 	{
-		var range:Int = max - min + 1;
+		final range:Int = max - min + 1;
 
 		if (value < min)
 			value += range * Std.int((min - value) / range + 1);
@@ -286,7 +263,7 @@ class FlxMath
 	 * @param 	stop2 	Upper bound of the value's target range
 	 * @return The remapped value
 	 */
-	public static function remapToRange(value:Float, start1:Float, stop1:Float, start2:Float, stop2:Float):Float
+	public static inline function remapToRange(value:Float, start1:Float, stop1:Float, start2:Float, stop2:Float):Float
 	{
 		return start2 + (value - start1) * ((stop2 - start2) / (stop1 - start1));
 	}
@@ -313,6 +290,7 @@ class FlxMath
 	{
 		return Math.sqrt(dx * dx + dy * dy);
 	}
+
 	#if !macro
 	/**
 	 * Find the distance (in pixels, rounded) between two FlxSprites, taking their origin into account
@@ -464,17 +442,11 @@ class FlxMath
 	/**
 	 * Returns the amount of decimals a `Float` has.
 	 */
-	public static function getDecimals(n:Float):Int
+	public static inline function getDecimals(n:Float):Int
 	{
-		var helperArray:Array<String> = Std.string(n).split(".");
-		var decimals:Int = 0;
-
-		if (helperArray.length > 1)
-		{
-			decimals = helperArray[1].length;
-		}
-
-		return decimals;
+		final numString = Std.string(n);
+		final dotIndex = numString.indexOf(".");
+		return dotIndex == -1 ? 0 : numString.length - dotIndex - 1;
 	}
 
 	public static inline function equal(aValueA:Float, aValueB:Float, aDiff:Float = EPSILON):Bool
@@ -547,7 +519,7 @@ class FlxMath
 	 */
 	public static inline function sinh(n:Float):Float
 	{
-		return (Math.exp(n) - Math.exp(-n)) / 2;
+		return (Math.exp(n) - Math.exp(-n)) * 0.5;
 	}
 
 	/**

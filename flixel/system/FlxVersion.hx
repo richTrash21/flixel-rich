@@ -10,14 +10,25 @@ class FlxVersion
 	public var major(default, null):Int;
 	public var minor(default, null):Int;
 	public var patch(default, null):Int;
-
-	public function new(Major:Int, Minor:Int, Patch:Int)
+	
+	@:noCompletion
+	var s:String;
+	
+	public function new(major:Int, minor:Int, patch:Int)
 	{
-		major = Major;
-		minor = Minor;
-		patch = Patch;
+		this.major = major;
+		this.minor = minor;
+		this.patch = patch;
+		
+		// build a string representation of this version
+		var sha = FlxVersion.sha;
+		if (sha != "")
+		{
+			sha = "@" + sha.substring(0, 7);
+		}
+		s = 'HaxeFlixel $major.$minor.$patch-rich$sha';
 	}
-
+	
 	/**
 	 * Formats the version in the format "HaxeFlixel MAJOR.MINOR.PATCH-COMMIT_SHA",
 	 * e.g. HaxeFlixel 3.0.4.
@@ -25,11 +36,6 @@ class FlxVersion
 	 */
 	public function toString():String
 	{
-		var sha = FlxVersion.sha;
-		if (sha != "")
-		{
-			sha = "@" + sha.substring(0, 7);
-		}
-		return 'HaxeFlixel $major.$minor.$patch$sha';
+		return s;
 	}
 }
