@@ -1,5 +1,6 @@
 package flixel;
 
+import flixel.math.FlxAngle;
 import openfl.display.Bitmap;
 import openfl.display.BitmapData;
 import openfl.display.DisplayObject;
@@ -553,6 +554,12 @@ class FlxCamera extends FlxBasic
 
 	var _helperPoint:Point = new Point();
 
+	@:noCompletion
+	var _sinAngle:Float = 0;
+	
+	@:noCompletion
+	var _cosAngle:Float = 1;
+
 	/**
 	 * Currently used draw stack item
 	 */
@@ -788,11 +795,13 @@ class FlxCamera extends FlxBasic
 			if (_useBlitMatrix)
 			{
 				_helperMatrix.concat(_blitMatrix);
+				rotateMatrix(_helperMatrix);
 				buffer.draw(pixels, _helperMatrix, null, null, null, (smoothing || antialiasing));
 			}
 			else
 			{
 				_helperMatrix.translate(-viewMarginLeft, -viewMarginTop);
+				rotateMatrix(_helperMatrix);
 				buffer.draw(pixels, _helperMatrix, null, blend, null, (smoothing || antialiasing));
 			}
 		}
@@ -806,6 +815,7 @@ class FlxCamera extends FlxBasic
 			#else
 			var drawItem = startQuadBatch(frame.parent, isColored, hasColorOffsets, blend, smoothing, shader);
 			#end
+			rotateMatrix(matrix);
 			drawItem.addQuad(frame, matrix, transform);
 		}
 	}
@@ -822,6 +832,7 @@ class FlxCamera extends FlxBasic
 					_helperMatrix.identity();
 					_helperMatrix.translate(destPoint.x, destPoint.y);
 					_helperMatrix.concat(_blitMatrix);
+					rotateMatrix(_helperMatrix);
 					buffer.draw(pixels, _helperMatrix, null, null, null, (smoothing || antialiasing));
 				}
 				else
@@ -850,6 +861,7 @@ class FlxCamera extends FlxBasic
 			#else
 			var drawItem:FlxDrawTrianglesItem = startTrianglesBatch(frame.parent, smoothing, isColored, blend);
 			#end
+			rotateMatrix(_helperMatrix);
 			drawItem.addQuad(frame, _helperMatrix, transform);
 		}
 	}
@@ -914,6 +926,7 @@ class FlxCamera extends FlxBasic
 					_helperMatrix.translate(-viewMarginLeft, -viewMarginTop);
 				}
 
+				rotateMatrix(_helperMatrix);
 				buffer.draw(trianglesSprite, _helperMatrix);
 				#if FLX_DEBUG
 				if (FlxG.debugger.drawDebug)
@@ -944,6 +957,18 @@ class FlxCamera extends FlxBasic
 			var drawItem:FlxDrawTrianglesItem = startTrianglesBatch(graphic, smoothing, isColored, blend);
 			drawItem.addTriangles(vertices, indices, uvtData, colors, position, _bounds);
 			#end
+		}
+	}
+
+	inline function rotateMatrix(matrix:FlxMatrix)
+	{
+		if (angle % 360 != 0)
+		{
+			final midpointX = width * 0.5;
+			final midpointY = height * 0.5;
+			matrix.translate(-midpointX, -midpointY);
+			matrix.rotateWithTrig(_cosAngle, _sinAngle);
+			matrix.translate(midpointX, midpointY);
 		}
 	}
 
@@ -1937,8 +1962,9 @@ class FlxCamera extends FlxBasic
 	 */
 	public inline function containsPoint(point:FlxPoint, width:Float = 0, height:Float = 0):Bool
 	{
-		var contained = (point.x + width > viewMarginLeft) && (point.x < viewMarginRight)
-			&& (point.y + height > viewMarginTop) && (point.y < viewMarginBottom);
+		final cameraView = getRotatedBounds(getViewMarginRect(_bounds));
+		final contained = (point.x + width > cameraView.left) && (point.x < cameraView.right) && (point.y + height > cameraView.top)
+			&& (point.y < cameraView.bottom);
 		point.putWeak();
 		return contained;
 	}
@@ -1949,10 +1975,55 @@ class FlxCamera extends FlxBasic
 	 */
 	public inline function containsRect(rect:FlxRect):Bool
 	{
-		var contained = (rect.right > viewMarginLeft) && (rect.x < viewMarginRight)
-			&& (rect.bottom > viewMarginTop) && (rect.y < viewMarginBottom);
-		rect.putWeak();
-		return contained;
+		final cameraView = getRotatedBounds(getViewMarginRect(_bounds));
+		return cameraView.overlaps(rect);
+	}
+	
+	/**
+	 * Helper function to get rotated boundaries for this camera (if camera is rotated).
+	 */
+	inline function getRotatedBounds(rect:FlxRect):FlxRect
+	{
+		var degrees = angle % 360;
+		if (degrees != 0)
+		{
+			if (degrees < 0)
+				degrees += 360;
+				
+			final originX = rect.width * 0.5;
+			final originY = rect.height * 0.5;
+			
+			final left = -originX;
+			final top = -originY;
+			final right = -originX + rect.width;
+			final bottom = -originY + rect.height;
+			
+			if (degrees < 90)
+			{
+				rect.x += originX + _cosAngle * left - _sinAngle * bottom;
+				rect.y += originY + _sinAngle * left + _cosAngle * top;
+			}
+			else if (degrees < 180)
+			{
+				rect.x += originX + _cosAngle * right - _sinAngle * bottom;
+				rect.y += originY + _sinAngle * left + _cosAngle * bottom;
+			}
+			else if (degrees < 270)
+			{
+				rect.x += originX + _cosAngle * right - _sinAngle * top;
+				rect.y += originY + _sinAngle * right + _cosAngle * bottom;
+			}
+			else
+			{
+				rect.x += originX + _cosAngle * left - _sinAngle * top;
+				rect.y += originY + _sinAngle * right + _cosAngle * top;
+			}
+			
+			final newHeight = Math.abs(_cosAngle * rect.height) + Math.abs(_sinAngle * rect.width);
+			rect.width = Math.abs(_cosAngle * rect.width) + Math.abs(_sinAngle * rect.height);
+			rect.height = newHeight;
+		}
+		return rect;
 	}
 
 	function set_followLerp(Value:Float):Float
@@ -2013,8 +2084,15 @@ class FlxCamera extends FlxBasic
 
 	function set_angle(Angle:Float):Float
 	{
+		if (angle != Angle)
+		{
+			final radians = Angle * FlxAngle.TO_RAD;
+			_sinAngle = Math.sin(radians);
+			_cosAngle = Math.cos(radians);
+		}
+
 		angle = Angle;
-		flashSprite.rotation = Angle;
+		// flashSprite.rotation = Angle;
 		return Angle;
 	}
 
