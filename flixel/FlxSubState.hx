@@ -1,5 +1,6 @@
 package flixel;
 
+import flixel.FlxCamera;
 import flixel.system.FlxBGSprite;
 import flixel.util.FlxColor;
 import flixel.util.FlxDestroyUtil;
@@ -108,5 +109,23 @@ class FlxSubState extends FlxState
 			_bgSprite.pixels.setPixel32(0, 0, Value);
 
 		return _bgColor = Value;
+	}
+
+	@:noCompletion
+	override function set_camera(value:FlxCamera):FlxCamera
+	{
+		if (FlxG.renderTile && _bgSprite != null)
+			_bgSprite.camera = value;
+
+		return super.set_camera(value);
+	}
+	
+	@:noCompletion
+	override function set_cameras(value:Array<FlxCamera>):Array<FlxCamera>
+	{
+		if (FlxG.renderTile && _bgSprite != null)
+			_bgSprite.cameras = value.copy();
+
+		return super.set_cameras(value);
 	}
 }
