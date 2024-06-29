@@ -1,5 +1,7 @@
 package flixel.animation;
 
+import flixel.math.FlxPoint;
+import flixel.util.FlxDestroyUtil;
 import flixel.FlxG;
 
 /**
@@ -88,6 +90,11 @@ class FlxAnimation extends FlxBaseAnimation
 	public var timeScale:Float = 1.0;
 
 	/**
+	 * TODO: doc
+	 */
+	public var offset(default, null):FlxPoint = FlxPoint.get();
+
+	/**
 	 * Internal, used to time each frame of animation.
 	 */
 	var _frameTimer:Float = 0;
@@ -116,6 +123,7 @@ class FlxAnimation extends FlxBaseAnimation
 	 */
 	override public function destroy():Void
 	{
+		offset = FlxDestroyUtil.put(offset);
 		frames = null;
 		name = null;
 		super.destroy();

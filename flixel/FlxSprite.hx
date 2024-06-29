@@ -834,6 +834,8 @@ class FlxSprite extends FlxObject
 	function drawSimple(camera:FlxCamera):Void
 	{
 		getScreenPosition(_point, camera).subtractPoint(offset);
+		if (animation.curAnim != null)
+			_point.subtractPoint(animation.curAnim.offset);
 		if (isPixelPerfectRender(camera))
 			_point.floor();
 
@@ -857,6 +859,8 @@ class FlxSprite extends FlxObject
 		}
 
 		getScreenPosition(_point, camera).subtractPoint(offset);
+		if (animation.curAnim != null)
+			_point.subtractPoint(animation.curAnim.offset);
 		_point.add(origin.x, origin.y);
 		_matrix.translate(_point.x, _point.y);
 
@@ -1123,6 +1127,8 @@ class FlxSprite extends FlxObject
 		result.subtract(worldPoint.x, worldPoint.y);
 		result.negate();
 		result.addPoint(offset);
+		if (animation.curAnim != null)
+			result.addPoint(animation.curAnim.offset);
 		result.subtractPoint(origin);
 		result.scale(1 / scale.x, 1 / scale.y);
 		result.degrees -= angle;
@@ -1149,6 +1155,8 @@ class FlxSprite extends FlxObject
 		result.subtract(screenPoint.x, screenPoint.y);
 		result.negate();
 		result.addPoint(offset);
+		if (animation.curAnim != null)
+			result.addPoint(animation.curAnim.offset);
 		result.subtractPoint(origin);
 		result.scale(1 / scale.x, 1 / scale.y);
 		result.degrees -= angle;
@@ -1343,6 +1351,11 @@ class FlxSprite extends FlxObject
 		_scaledOrigin.set(origin.x * scale.x, origin.y * scale.y);
 		newRect.x += -Std.int(camera.scroll.x * scrollFactor.x) - offset.x + origin.x - _scaledOrigin.x;
 		newRect.y += -Std.int(camera.scroll.y * scrollFactor.y) - offset.y + origin.y - _scaledOrigin.y;
+		if (animation.curAnim != null)
+		{
+			newRect.x -= animation.curAnim.offset.x;
+			newRect.y -= animation.curAnim.offset.y;
+		}
 		if (isPixelPerfectRender(camera))
 			newRect.floor();
 		newRect.setSize(frameWidth * Math.abs(scale.x), frameHeight * Math.abs(scale.y));
